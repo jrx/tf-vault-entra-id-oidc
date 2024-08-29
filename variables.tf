@@ -14,14 +14,14 @@ variable "secret-mount" {
 }
 
 variable "secret-path" {
-type    = string
-  default = "secret/azure"
+  type    = string
+  default = "azure"
 }
 
 variable "entra-domain" {
-  type    = string
+  type = string
 }
 
 variable "entra-user-password" {
-  type    = string
+  type = string
 }

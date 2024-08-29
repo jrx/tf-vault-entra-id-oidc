@@ -79,9 +79,9 @@ resource "azuread_user" "noaccess" {
   mail_nickname       = "noaccess"
 }
 
-resource "azuread_group" "noaccess-group" {
-  display_name     = "noaccess-group"
-  mail_nickname    = "noaccess-group"
+resource "azuread_group" "default-group" {
+  display_name     = "default-group"
+  mail_nickname    = "default-group"
   owners           = [data.azuread_client_config.current.object_id]
   security_enabled = true
 
@@ -89,6 +89,19 @@ resource "azuread_group" "noaccess-group" {
     azuread_user.noaccess.object_id,
   ]
 }
+
+resource "azuread_group" "vault-access-group" {
+  display_name     = "vault-access-group"
+  mail_nickname    = "vault-access-group"
+  owners           = [data.azuread_client_config.current.object_id]
+  security_enabled = true
+
+  members = [
+    azuread_user.reader.object_id,
+    azuread_user.admin.object_id,
+  ]
+}
+
 resource "azuread_group" "reader-group" {
   display_name     = "reader-group"
   mail_nickname    = "reader-group"
@@ -97,7 +110,6 @@ resource "azuread_group" "reader-group" {
 
   members = [
     azuread_user.reader.object_id,
-    azuread_user.admin.object_id,
   ]
 }
 

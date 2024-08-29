@@ -34,7 +34,7 @@ resource "vault_policy" "kv-admin" {
   name = "kv-admin"
 
   policy = <<EOT
-path "/secret/*" {
+path "secret/*" {
     capabilities = ["create", "read", "update", "delete", "list"]
 }
 EOT
@@ -70,41 +70,23 @@ resource "vault_jwt_auth_backend" "oidc" {
   oidc_discovery_url = "https://login.microsoftonline.com/${data.azuread_client_config.current.tenant_id}/v2.0"
   oidc_client_id     = azuread_service_principal.vault-entra-id.client_id
   oidc_client_secret = azuread_service_principal_password.vault-entra-id.value
-  default_role       = "reader"
+  default_role       = "vault-access"
+  tune {
+    listing_visibility = "unauth"
+  }
 }
 
-resource "vault_jwt_auth_backend_role" "oidc-reader" {
+resource "vault_jwt_auth_backend_role" "oidc" {
   backend        = vault_jwt_auth_backend.oidc.path
-  role_name      = "reader"
+  role_name      = "vault-access"
   token_policies = []
 
   user_claim   = "email"
   groups_claim = "groups"
 
   bound_claims = {
-    groups = azuread_group.reader-group.id
-  }
-
-  role_type = "oidc"
-  allowed_redirect_uris = [
-    "http://localhost:8250/oidc/callback",
-    "http://localhost:8200/ui/vault/auth/oidc/oidc/callback",
-  ]
-  oidc_scopes = ["https://graph.microsoft.com/.default"]
-}
-
-resource "vault_jwt_auth_backend_role" "oidc-admin" {
-  backend                 = vault_jwt_auth_backend.oidc.path
-  role_name               = "admin"
-  token_policies          = []
-  token_no_default_policy = false
-  verbose_oidc_logging    = true
-
-  user_claim   = "email"
-  groups_claim = "groups"
-
-  bound_claims = {
-    groups = azuread_group.admin-group.id
+    # groups = "${azuread_group.vault-access-group.id}"
+    groups = "${azuread_group.reader-group.id},${azuread_group.admin-group.id}"
   }
 
   role_type = "oidc"
