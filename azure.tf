@@ -87,6 +87,8 @@ resource "azuread_group" "default-group" {
 
   members = [
     azuread_user.noaccess.object_id,
+    azuread_user.reader.object_id,
+    azuread_user.admin.object_id,
   ]
 }
 
